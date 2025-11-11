@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import historico.Frequencia;
 import treino.Treino;
 
+import exceptions.*;
+
 public class Aluno extends Pessoa{
 
     private String dataNascimento;
@@ -40,12 +42,24 @@ public class Aluno extends Pessoa{
             return;
         }
 
-        if(!valida.validaAltura(altura)){
+        try {
+            if(!valida.validaAltura(altura)){
+                apagaValores();
+                return;
+            }
+        } catch (InvalidHeightException e) {
+            System.out.println("Erro: " + e.getMessage());
             apagaValores();
             return;
         }
 
-        if(!valida.validaData(dataNascimento)){
+        try {
+            if(!valida.validaData(dataNascimento)){
+                apagaValores();
+                return;
+            }
+        } catch (EmptyFieldException | InvalidDateException e) {
+            System.out.println("Erro: " + e.getMessage());
             apagaValores();
             return;
         }
@@ -63,7 +77,12 @@ public class Aluno extends Pessoa{
     public void setDataNascimento(String dataNascimento){
     	Validacoes valida = new Validacoes();
     	
-        if(!valida.validaData(dataNascimento)){
+    	try {
+            if(!valida.validaData(dataNascimento)){
+                return;
+            }
+        } catch (EmptyFieldException | InvalidDateException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
 
@@ -77,7 +96,12 @@ public class Aluno extends Pessoa{
     public void setAltura(float altura){
     	Validacoes valida = new Validacoes();
     	
-        if(!valida.validaAltura(altura)){
+    	try {
+            if(!valida.validaAltura(altura)){
+                return;
+            }
+        } catch (InvalidHeightException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
 

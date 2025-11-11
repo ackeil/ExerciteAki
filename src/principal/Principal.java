@@ -14,6 +14,8 @@ import treino.Treino;
 import util.DiaDaSemana;
 import util.Validacoes;
 
+import exceptions.*;
+
 public class Principal {
 	
 	private static final String USERNAME_ADMIN = "admin";

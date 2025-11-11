@@ -4,6 +4,7 @@ import treino.Aparelho;
 import pessoas.Aluno;
 import pessoas.Instrutor;
 import util.Validacoes;
+import exceptions.*;
 
 public class Academia {
 	
@@ -42,7 +43,11 @@ public class Academia {
 	}
 
 	public void setNome(String nome) {
-		if(Validacoes.validaString(nome))this.nome = nome;
+		try {
+			if(Validacoes.validaString(nome)) this.nome = nome;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 
 	public Endereco getEndereco() {
@@ -58,7 +63,11 @@ public class Academia {
 	}
 
 	public void setTelefone(String telefone) {
-		if(Validacoes.validaString(telefone))this.telefone = telefone;
+		try {
+			if(Validacoes.validaString(telefone)) this.telefone = telefone;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 	
 	public String getWebsite() {
@@ -67,7 +76,11 @@ public class Academia {
 	
 	public void setWebsite(String website)
 	{
-		if(Validacoes.validaString(website))this.website = website;
+		try {
+			if(Validacoes.validaString(website)) this.website = website;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 
 	public HorarioFuncionamento[] getHorariosFuncionamento() {

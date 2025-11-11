@@ -1,6 +1,7 @@
 package academia;
 
 import util.Validacoes;
+import exceptions.*;
 
 public class Endereco {
 	
@@ -33,7 +34,11 @@ public class Endereco {
 	}
 
 	public void setRua(String rua) {
-		if(Validacoes.validaString(rua))this.rua = rua;
+		try {
+			if(Validacoes.validaString(rua)) this.rua = rua;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 	
 	public String getBairro() {
@@ -42,7 +47,11 @@ public class Endereco {
 	
 	public void setBairro(String bairro)
 	{
-		if(Validacoes.validaString(bairro))this.bairro = bairro;
+		try {
+			if(Validacoes.validaString(bairro)) this.bairro = bairro;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 
 	public Integer getNro() {
@@ -58,7 +67,11 @@ public class Endereco {
 	}
 
 	public void setCep(String cep) {
-		if(Validacoes.validaString(cep))this.cep = cep;
+		try {
+			if(Validacoes.validaString(cep)) this.cep = cep;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 
 	public String getCidade() {
@@ -66,12 +79,20 @@ public class Endereco {
 	}
 
 	public void setCidade(String cidade) {
-		if(Validacoes.validaString(cidade))this.cidade = cidade;
+		try {
+			if(Validacoes.validaString(cidade)) this.cidade = cidade;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 	
 	public void setEstado(String estado)
 	{
-		if(Validacoes.validaString(estado))this.estado = estado;
+		try {
+			if(Validacoes.validaString(estado)) this.estado = estado;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 	
 	public String getEstado()
@@ -84,7 +105,11 @@ public class Endereco {
 	}
 	
 	public void setcomplemento(String complemento) {
-		if(Validacoes.validaString(complemento))this.complemento = complemento;
+		try {
+			if(Validacoes.validaString(complemento)) this.complemento = complemento;
+		} catch (EmptyFieldException e) {
+			System.out.println("Erro: " + e.getMessage());
+		}
 	}
 	
 	public String toString()

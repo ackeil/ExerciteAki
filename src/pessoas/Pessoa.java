@@ -3,6 +3,8 @@ package pessoas;
 import util.Validacoes;
 import sistema.Login;
 
+import exceptions.*;
+
 public abstract class Pessoa{
 
     private String nome;
@@ -16,25 +18,40 @@ public abstract class Pessoa{
     public Pessoa(String nome, String email, String telefone, String username, String senha){
     	Validacoes valida = new Validacoes();
     	
-        if(!valida.validaNome(nome)){
+    	try {
+            if(!valida.validaNome(nome)){
+                return;
+            }
+        } catch (EmptyFieldException | InvalidNameException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
 
-        if(!valida.validaEmail(email)){
+        try {
+            if(!valida.validaEmail(email)){
+                return;
+            }
+        } catch (EmptyFieldException | InvalidEmailException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
 
-        if(!valida.validaTelefone(telefone)){
+        try {
+            if(!valida.validaTelefone(telefone)){
+                return;
+            }
+        } catch (EmptyFieldException | InvalidPhoneException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
         
-        if(username.trim() == "") {
-    		System.out.println("O usuário deve ser informado");
+        if(username == null || username.trim().isEmpty()) {
+    		System.out.println("Erro: O usuário deve ser informado");
     		return;
     	}
 
-    	if(senha.trim() == "") {
-    		System.out.println("A senha deve ser informada");
+    	if(senha == null || senha.trim().isEmpty()) {
+    		System.out.println("Erro: A senha deve ser informada");
     		return;
     	}
 
@@ -60,7 +77,12 @@ public abstract class Pessoa{
     public void setEmail(String email){
     	Validacoes valida = new Validacoes();
     	
-        if(!valida.validaEmail(email)){
+    	try {
+            if(!valida.validaEmail(email)){
+                return;
+            }
+        } catch (EmptyFieldException | InvalidEmailException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
 
@@ -74,9 +96,14 @@ public abstract class Pessoa{
     public void setTelefone(String telefone){
     	Validacoes valida = new Validacoes();
     	
-        if(!valida.validaTelefone(telefone)){
-            return;
-        }
+    	 try {
+             if(!valida.validaTelefone(telefone)){
+                 return;
+             }
+         } catch (EmptyFieldException | InvalidPhoneException e) {
+             System.out.println("Erro: " + e.getMessage());
+             return;
+         }
 
         this.telefone = telefone;
     }

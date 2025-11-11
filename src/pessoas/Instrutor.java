@@ -2,6 +2,8 @@ package pessoas;
 
 import util.Validacoes;
 
+import exceptions.*;
+
 public class Instrutor extends Pessoa{
 
     private String formacao;
@@ -21,18 +23,29 @@ public class Instrutor extends Pessoa{
             return;
         }
 
-        if(!valida.validaFormacao(formacao)){
+        try {
+            if(!valida.validaFormacao(formacao)){
+                apagaValores();
+                return;
+            }
+        } catch (EmptyFieldException | InvalidFormacaoException e) {
+            System.out.println("Erro: " + e.getMessage());
             apagaValores();
             return;
         }
-
+        
         this.formacao = formacao;
     }
 
     public void setFormacao(String formacao){
     	Validacoes valida = new Validacoes();
     	
-        if(!valida.validaFormacao(formacao)){
+    	try {
+            if(!valida.validaFormacao(formacao)){
+                return;
+            }
+        } catch (EmptyFieldException | InvalidFormacaoException e) {
+            System.out.println("Erro: " + e.getMessage());
             return;
         }
 
