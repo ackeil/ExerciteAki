@@ -204,9 +204,12 @@ public class Principal {
 	        val.validaEmail("emailinvalido");
 	        System.out.println("FALHOU: Email inválido foi aceito\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (InvalidEmailException e) {
 	        System.out.println("Email inválido corretamente rejeitado\n");
 	        passou++;
+	    } catch (EmptyFieldException e) {
+	        System.out.println("FALHOU: Exceção errada lançada\n");
+	        falhou++;
 	    }
 	    
 	    System.out.println("TESTE 3: Telefone válido");
@@ -224,9 +227,12 @@ public class Principal {
 	        val.validaTelefone("(00) 99999-9999");
 	        System.out.println("FALHOU: Telefone inválido foi aceito\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (InvalidPhoneException e) {
 	        System.out.println("Telefone inválido corretamente rejeitado\n");
 	        passou++;
+	    } catch (EmptyFieldException e) {
+	        System.out.println("FALHOU: Exceção errada lançada\n");
+	        falhou++;
 	    }
 	    
 	    System.out.println("TESTE 5: Nome válido com espaço");
@@ -244,9 +250,12 @@ public class Principal {
 	        val.validaNome("Carlos123");
 	        System.out.println("FALHOU: Nome inválido foi aceito\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (InvalidNameException e) {
 	        System.out.println("Nome inválido corretamente rejeitado\n");
 	        passou++;
+	    } catch (EmptyFieldException e) {
+	        System.out.println("FALHOU: Exceção errada lançada\n");
+	        falhou++;
 	    }
 	    
 	    System.out.println("TESTE 7: Data válida");
@@ -264,9 +273,12 @@ public class Principal {
 	        val.validaData("29/02/2023");
 	        System.out.println("FALHOU: Data inválida foi aceita\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (InvalidDateException e) {
 	        System.out.println("Data inválida corretamente rejeitada\n");
 	        passou++;
+	    } catch (EmptyFieldException e) {
+	        System.out.println("FALHOU: Exceção errada lançada\n");
+	        falhou++;
 	    }
 	    
 	    System.out.println("TESTE 9: Altura válida");
@@ -284,7 +296,7 @@ public class Principal {
 	        val.validaAltura(0.3f);
 	        System.out.println("FALHOU: Altura inválida foi aceita\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (InvalidHeightException e) {
 	        System.out.println("Altura inválida corretamente rejeitada\n");
 	        passou++;
 	    }
@@ -304,9 +316,12 @@ public class Principal {
 	        val.validaFormacao("Formação123");
 	        System.out.println("FALHOU: Formação inválida foi aceita\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (InvalidFormacaoException e) {
 	        System.out.println("Formação inválida corretamente rejeitada\n");
 	        passou++;
+	    } catch (EmptyFieldException e) {
+	        System.out.println("FALHOU: Exceção errada lançada\n");
+	        falhou++;
 	    }
 	    
 	    System.out.println("TESTE 13: Número válido de repetições");
@@ -324,7 +339,7 @@ public class Principal {
 	        val.validaRepeticoes(100);
 	        System.out.println("FALHOU: Repetições excessivas foram aceitas\n");
 	        falhou++;
-	    } catch (IllegalArgumentException e) {
+	    } catch (ExcessiveRepetitionsException e) {
 	        System.out.println("Repetições excessivas corretamente rejeitadas\n");
 	        passou++;
 	    }
@@ -1130,11 +1145,20 @@ public class Principal {
 	        }
 	    }
 	    
-	    String telefone = null;
+	    String telefone = "";
+	    boolean telefoneValido = false;
 	    Validacoes valida = new Validacoes();
-	    while(!valida.validaTelefone(telefone)) {
-	        System.out.print("Telefone (formato: (XX) 9XXXX-XXXX): ");
-	        telefone = sc.nextLine();
+
+	    while(!telefoneValido) {
+	        try {
+	            System.out.print("Telefone (formato: (XX) 9XXXX-XXXX): ");
+	            telefone = sc.nextLine();
+	            valida.validaTelefone(telefone);  // Call inside try block
+	            telefoneValido = true;  // Only reaches here if valid
+	        } catch (EmptyFieldException | InvalidPhoneException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	            // Loop continues, asking for input again
+	        }
 	    }
 	    
 	    String website = "";
@@ -1245,45 +1269,79 @@ public class Principal {
 	    
 	    Validacoes valida = new Validacoes();
 	    
-	    nome = null;
-	    while(!valida.validaNome(nome)){
-	        System.out.print("Nome: ");
-	        nome = sc.nextLine();
+	    nome = "";
+	    boolean nomeValido = false;
+
+	    while(!nomeValido) {
+	        try {
+	            System.out.print("Nome: ");
+	            nome = sc.nextLine();
+	            valida.validaNome(nome);
+	            nomeValido = true;
+	        } catch (EmptyFieldException | InvalidNameException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	        }
 	    }
 	    
 	    email = null;	    
-	    while(!valida.validaEmail(email)){
-	    		System.out.print("Email: ");
-	        email = sc.nextLine();
+	    boolean emailValido = false;
+
+	    while(!emailValido) {
+	        try {
+	            System.out.print("Email: ");
+	            email = sc.nextLine();
+	            valida.validaEmail(email);
+	            emailValido = true;
+	        } catch (EmptyFieldException | InvalidEmailException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	        }
 	    }
 	    
 	    telefone = null;
-	    while(!valida.validaTelefone(telefone)) {
-	        System.out.print("Telefone (formato: (XX) 9XXXX-XXXX): ");
-	        telefone = sc.nextLine();
+	    boolean telefoneValido = false;
+
+	    while(!telefoneValido) {
+	        try {
+	            System.out.print("Telefone (formato: (XX) 9XXXX-XXXX): ");
+	            telefone = sc.nextLine();
+	            valida.validaTelefone(telefone);  // Call inside try block
+	            telefoneValido = true;  // Only reaches here if valid
+	        } catch (EmptyFieldException | InvalidPhoneException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	            // Loop continues, asking for input again
+	        }
 	    }
 	    
 	    dataNascimento = null;
-	    while(!valida.validaData(dataNascimento)) {
-	        System.out.print("Data de Nascimento (DD/MM/AAAA): ");
-	        dataNascimento = sc.nextLine();
+	    boolean dataValida = false;
+
+	    while(!dataValida) {
+	        try {
+	            System.out.print("Data (DD/MM/AAAA): ");
+	            dataNascimento = sc.nextLine();
+	            valida.validaData(dataNascimento);
+	            dataValida = true;
+	        } catch (EmptyFieldException | InvalidDateException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	        }
 	    }
 	    
 	    altura = 0;
-	    do{
-	        System.out.print("Altura (em metros, ex: 1,75): ");
+	    boolean alturaValida = false;
+
+	    while(!alturaValida) {
 	        try {
-	            altura = sc.nextFloat();
-	            sc.nextLine();
-	            if(!valida.validaAltura(altura)) {
-	                altura = 0;
-	            }
-	        } catch(Exception e) {
+	            System.out.print("Altura (ex: 1,75): ");
+	            String alturaStr = sc.nextLine().replace(',', '.');
+	            altura = Float.parseFloat(alturaStr);
+	            valida.validaAltura(altura);
+	            alturaValida = true;
+	        } catch (InvalidHeightException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	        } catch (NumberFormatException e) {
 	            System.out.println("Erro: Digite um número válido!");
-	            sc.nextLine();
-	            altura = 0;
 	        }
-	    }while(!valida.validaAltura(altura));
+	    }
 	    
 	    username = "";
 	    while(username.trim().isEmpty()) {
@@ -1406,27 +1464,64 @@ public class Principal {
 	    Validacoes valida = new Validacoes();
 	    
 	    nome = null;
-	    while(!valida.validaNome(nome)) {
-	        System.out.print("Nome: ");
-	        nome = sc.nextLine();
+	    boolean nomeValido = false;
+
+	    while(!nomeValido) {
+	        try {
+	            System.out.print("Nome: ");
+	            nome = sc.nextLine();
+	            valida.validaNome(nome);
+	            nomeValido = true;
+	        } catch (EmptyFieldException | InvalidNameException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	        }
 	    }
 	    
 	    email = null;
-	    while(!valida.validaEmail(email)) {
-	        System.out.print("Email: ");
-	        email = sc.nextLine();
+	    boolean emailValido = false;
+
+	    while(!emailValido) {
+	        try {
+	            System.out.print("Email: ");
+	            email = sc.nextLine();
+	            valida.validaEmail(email);
+	            emailValido = true;
+	        } catch (EmptyFieldException | InvalidEmailException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	        }
 	    }
 	    
 	    telefone = null;
-	    while(!valida.validaTelefone(telefone)) {
-	        System.out.print("Telefone (formato: (XX) 9XXXX-XXXX): ");
-	        telefone = sc.nextLine();
+	    boolean telefoneValido = false;
+
+	    while(!telefoneValido) {
+	        try {
+	            System.out.print("Telefone (formato: (XX) 9XXXX-XXXX): ");
+	            telefone = sc.nextLine();
+	            valida.validaTelefone(telefone);  // Call inside try block
+	            telefoneValido = true;  // Only reaches here if valid
+	        } catch (EmptyFieldException | InvalidPhoneException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	            // Loop continues, asking for input again
+	        }
 	    }
 	    
 	    formacao = null;
-	    while(!valida.validaFormacao(formacao)) {
-	        System.out.print("Formação: ");
-	        formacao = sc.nextLine();
+	    boolean formacaoValida = false;
+	    while(!formacaoValida) {
+	    	try {
+	    		System.out.print("Formação: ");
+		        formacao = sc.nextLine();
+		        valida.validaFormacao(formacao);
+		        formacaoValida = true;
+	    	} catch (InvalidFormacaoException e)
+	    	{
+	    		System.out.println("Erro: " + e.getMessage());
+	    	}
+	    	catch (EmptyFieldException e) {
+	            System.out.println("Erro: " + e.getMessage());
+	            // Loop continues, asking for input again
+	        }
 	    }
 	    
 	    username = "";
@@ -1746,18 +1841,40 @@ public class Principal {
 			}
             
             if(abre.equalsIgnoreCase("S")) {
-            	String horaAbertura;
-            	String horaFechamento;
+            	String horaAbertura = "";
+            	String horaFechamento = "";
 
-            	do {
-            		System.out.print("Horário de abertura (HH:MM): ");
-                    horaAbertura = sc.nextLine();
-            	}while(!val.validaHora(horaAbertura));
+            	boolean horaValida = false;
+            	
+            	while(!horaValida)
+            	{
+            		try {
+	            		System.out.print("Horário de abertura (HH:MM): ");
+	                    horaAbertura = sc.nextLine();
+	                    val.validaHora(horaAbertura);
+	                    horaValida = true;
+            		} catch (InvalidDateException e) {
+            			System.out.println("Erro: " + e.getMessage());
+            		}catch (EmptyFieldException e) {
+            			System.out.println("Erro: " + e.getMessage());
+            		}
+            	} 
+            	
+            	horaValida = false;
                 
-            	do {
-            		System.out.print("Horário de fechamento (HH:MM): ");
-            		horaFechamento = sc.nextLine();
-            	}while(!val.validaHora(horaAbertura));
+            	while(!horaValida)
+            	{
+            		try {
+	            		System.out.print("Horário de abertura (HH:MM): ");
+	                    horaFechamento = sc.nextLine();
+	                    val.validaHora(horaFechamento);
+	                    horaValida = true;
+            		} catch (InvalidDateException e) {
+            			System.out.println("Erro: " + e.getMessage());
+            		}catch (EmptyFieldException e) {
+            			System.out.println("Erro: " + e.getMessage());
+            		}
+            	} 
                 
                 try {
                     String[] partesAbertura = horaAbertura.split(":");
