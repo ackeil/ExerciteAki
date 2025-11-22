@@ -2,19 +2,21 @@ package historico;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Historico {
 	
 	private double peso;
 	private double massaMuscular;
-	private LocalDate data;
+	private String data;
 	
 	public Historico() {};
 	
-	public Historico(double peso, double massaMuscular, LocalDate data) {
+	public Historico(double peso, double massaMuscular, LocalDate dataObj) {
 		super();
 		this.setPeso(peso);
 		this.setMassaMuscular(massaMuscular);
-		this.data = data;
+		this.data = dataObj.toString();
 	}
 	
 	public double getPeso() {
@@ -29,13 +31,14 @@ public class Historico {
 	public void setMassaMuscular(double massaMuscular) {
 		if(massaMuscular > 0)this.massaMuscular = massaMuscular;
 	}
-	public LocalDate getData() {
+	public String getData() {
 		return data;
 	}
-	public void setData(LocalDate data) {
+	public void setData(String data) {
 		this.data = data;
 	}
 	
+	@JsonIgnore
 	public double getMassaMagraKg() 
 	{
         return peso * (massaMuscular / 100.0);

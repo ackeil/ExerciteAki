@@ -122,6 +122,7 @@ public class Academia {
 	
 	public void addAparelho(Aparelho nAparelho){
 		this.aparelhos.add(nAparelho);
+		this.ultimoAparelho++;
 	}
 	
 	public Aparelho buscarAparelhoPorCodigo(int ID) {
@@ -225,6 +226,7 @@ public class Academia {
 	    }
 	    
 		this.alunos.add(novoAluno);
+		this.ultimoAluno++;
 		return true;
 	}
 
@@ -353,6 +355,7 @@ public class Academia {
 	    }
 	    
 		this.instrutores.add(novoInstrutor);
+		this.ultimoInstrutor++;
 		return true;
 	}
 

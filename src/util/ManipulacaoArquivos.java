@@ -15,21 +15,28 @@ public class ManipulacaoArquivos {
 	
 	public ManipulacaoArquivos() {
 		this.mapper = new ObjectMapper();
+		
+		this.mapper.findAndRegisterModules();
 	}
 
 	public Academia leArquivoJSON(String arquivo) {
-		String json = null;
-		Academia academia = null;
-    	try {
-			json = this.leArquivo(arquivo);
-			if(!json.isEmpty()){
-				academia = this.mapper.readValue(json, Academia.class);
-			}
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-    	
-    	return academia;
+	    String json = null;
+	    Academia academia = null;
+	    try {
+	        json = this.leArquivo(arquivo);
+	        if(!json.isEmpty()){
+	            academia = this.mapper.readValue(json, Academia.class);
+	        }
+	    } catch (IOException e) {
+	        System.out.println("╔══════════════════════════════════════════════╗");
+	        System.out.println("║  ERRO AO CARREGAR ARQUIVO JSON!             ║");
+	        System.out.println("╚══════════════════════════════════════════════╝");
+	        System.out.println("Mensagem: " + e.getMessage());
+	        System.out.println("\nDetalhes completos:");
+	        e.printStackTrace();  // ← ADD THIS!
+	    }
+	    
+	    return academia;
 	}
 	
 	private String leArquivo(String nomeArquivo) throws IOException {

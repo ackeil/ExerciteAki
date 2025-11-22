@@ -44,6 +44,8 @@
     "dataNascimento" : "15/03/2000",
     "altura" : 1.75,
     "treinos" : [ ],
+    "frequencias" : [ ],
+    "historicos" : [ ],
     "sequencia" : 0
   }, {
     "@id" : 6,
@@ -57,6 +59,16 @@
     "dataNascimento" : "22/07/1998",
     "altura" : 1.65,
     "treinos" : [ ],
+    "frequencias" : [ ],
+    "historicos" : [ {
+      "peso" : 65.0,
+      "massaMuscular" : 10.0,
+      "data" : "2025-11-22"
+    }, {
+      "peso" : 68.0,
+      "massaMuscular" : 8.0,
+      "data" : "2025-11-22"
+    } ],
     "sequencia" : 0
   }, {
     "@id" : 7,
@@ -70,6 +82,8 @@
     "dataNascimento" : "10/11/2001",
     "altura" : 1.8,
     "treinos" : [ ],
+    "frequencias" : [ ],
+    "historicos" : [ ],
     "sequencia" : 0
   }, {
     "@id" : 8,
@@ -83,6 +97,8 @@
     "dataNascimento" : "05/04/1999",
     "altura" : 1.68,
     "treinos" : [ ],
+    "frequencias" : [ ],
+    "historicos" : [ ],
     "sequencia" : 0
   }, {
     "@id" : 9,
@@ -96,6 +112,8 @@
     "dataNascimento" : "18/09/2002",
     "altura" : 1.78,
     "treinos" : [ ],
+    "frequencias" : [ ],
+    "historicos" : [ ],
     "sequencia" : 0
   } ],
   "instrutores" : [ {
@@ -117,7 +135,7 @@
       "senha" : "1234"
     }
   } ],
-  "quantInstrutores" : 0,
-  "quantAlunos" : 0,
-  "quantAparelhos" : 0
+  "quantInstrutores" : 2,
+  "quantAparelhos" : 3,
+  "quantAlunos" : 5
 }

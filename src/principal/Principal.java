@@ -2,6 +2,7 @@ package principal;
 
 import java.io.File;
 import java.time.LocalTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,6 +19,7 @@ import treino.Treino;
 import util.DiaDaSemana;
 import util.Validacoes;
 import util.ManipulacaoArquivos;
+import historico.Historico;
 
 import exceptions.*;
 
@@ -196,6 +198,13 @@ public class Principal {
 
 		ManipulacaoArquivos arq = new ManipulacaoArquivos();
 		academia = arq.leArquivoJSON(caminho_arquivo);
+		
+		if(academia == null) {
+		    System.out.println("\n1  AVISO: Não foi possível carregar dados do arquivo.");
+		    System.out.println("Criando academia nova com dados de teste...\n");
+		    academia = criarAcademia();
+		    p.dadosDeTeste(academia);
+		}
 
 		/*
 		p.dadosDeTeste(academia); 
@@ -939,20 +948,246 @@ public class Principal {
 	    System.out.println("═══════════════════════════════════");
 	}
 	
-    // Funcoes temporarias 
 	public static void registrarEvolucaoAluno(Scanner sc, Academia academia) {
-	    System.out.println("\n=== REGISTRAR EVOLUÇÃO ===");
-	    System.out.println("Funcionalidade em desenvolvimento...");
+	    System.out.println("\n═══ REGISTRAR EVOLUÇÃO DO ALUNO ═══");
+	    
+	    System.out.print("Digite o email do aluno: ");
+	    String email = sc.nextLine();
+	    
+	    Aluno aluno = academia.buscarAlunoPorEmail(email);
+	    if(aluno == null) {
+	        System.out.println("\nAluno não encontrado!");
+	        return;
+	    }
+	    
+	    System.out.println("\nAluno: " + aluno.getNome());
+	    
+	    // Show last record if exists
+	    Historico ultimo = aluno.getUltimoHistorico();
+	    if(ultimo != null) {
+	        System.out.println("\n--- Última medição registrada ---");
+	        System.out.println("Data: " + ultimo.getData());
+	        System.out.println("Peso: " + String.format("%.2f", ultimo.getPeso()) + " kg");
+	        System.out.println("Massa Muscular: " + String.format("%.1f", ultimo.getMassaMuscular()) + "%");
+	        System.out.println("Massa Magra: " + String.format("%.2f", ultimo.getMassaMagraKg()) + " kg");
+	        System.out.println("─────────────────────────────────");
+	    }
+	    
+	    // Input new weight
+	    double peso = 0;
+	    boolean pesoValido = false;
+	    while(!pesoValido) {
+	        System.out.print("\nPeso atual (kg): ");
+	        try {
+	            String pesoStr = sc.nextLine().replace(',', '.');
+	            peso = Double.parseDouble(pesoStr);
+	            if(peso > 15 && peso < 255) {
+	                pesoValido = true;
+	            } else {
+	                System.out.println("Erro: Digite um peso válido entre 15 e 255 kg!");
+	            }
+	        } catch(Exception e) {
+	            System.out.println("Erro: Digite um número válido!");
+	        }
+	    }
+	    
+	    double massaMuscular = 0;
+	    boolean massaValida = false;
+	    while(!massaValida) {
+	        System.out.print("Percentual de massa muscular (%): ");
+	        try {
+	            String massaStr = sc.nextLine().replace(',', '.');
+	            massaMuscular = Double.parseDouble(massaStr);
+	            if(massaMuscular > 0 && massaMuscular <= 100) {
+	                massaValida = true;
+	            } else {
+	                System.out.println("Erro: Digite um percentual válido entre 0 e 100%!");
+	            }
+	        } catch(Exception e) {
+	            System.out.println("Erro: Digite um número válido!");
+	        }
+	    }
+	    
+	    Historico novoHistorico = new Historico(peso, massaMuscular, LocalDate.now());
+	    aluno.addHistorico(novoHistorico);
+	    
+	    Principal p = new Principal();
+	    ManipulacaoArquivos arq = new ManipulacaoArquivos();
+	    try{
+	        String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+	        arq.gravaJSONPessoa(caminho_arquivo, json);
+	    }catch(Exception e){
+	        System.out.println("Erro ao salvar: " + e.getMessage());
+	        return;
+	    }
+	    
+	    System.out.println("\n═══════════════════════════════════");
+	    System.out.println("✓ Evolução registrada com sucesso!");
+	    System.out.println("═══════════════════════════════════");
+	    System.out.println("Data: " + novoHistorico.getData());
+	    System.out.println("Peso: " + String.format("%.2f", peso) + " kg");
+	    System.out.println("Massa Muscular: " + String.format("%.1f", massaMuscular) + "%");
+	    System.out.println("Massa Magra: " + String.format("%.2f", novoHistorico.getMassaMagraKg()) + " kg");
+	    
+	    // Show progress if there's a previous record
+	    if(ultimo != null) {
+	        double variacaoPeso = peso - ultimo.getPeso();
+	        double variacaoMassa = massaMuscular - ultimo.getMassaMuscular();
+	        
+	        System.out.println("\n--- Progresso desde última medição ---");
+	        System.out.println("Variação de peso: " + 
+	            (variacaoPeso >= 0 ? "+" : "") + String.format("%.2f", variacaoPeso) + " kg");
+	        System.out.println("Variação de massa muscular: " + 
+	            (variacaoMassa >= 0 ? "+" : "") + String.format("%.1f", variacaoMassa) + "%");
+	    }
+	    System.out.println("═══════════════════════════════════");
 	}
 
-	public static void consultarEvolucaoAluno(Scanner sc, Academia academia) {
-	    System.out.println("\n=== CONSULTAR EVOLUÇÃO ===");
-	    System.out.println("Funcionalidade em desenvolvimento...");
+	public static void consultarEvolucaoAluno(Scanner sc, Academia academia) {	    
+	    System.out.println("\n═══ CONSULTAR EVOLUÇÃO DO ALUNO ═══");
+	    
+	    System.out.print("Digite o email do aluno: ");
+	    String email = sc.nextLine();
+	    
+	    Aluno aluno = academia.buscarAlunoPorEmail(email);
+	    if(aluno == null) {
+	        System.out.println("\nAluno não encontrado!");
+	        return;
+	    }
+	    
+	    List<Historico> historicos = aluno.getHistoricos();
+	    
+	    if(historicos == null || historicos.isEmpty()) {
+	        System.out.println("\n" + aluno.getNome() + " ainda não possui registros de evolução.");
+	        System.out.println("Registre a primeira medição no menu 'Registrar Evolução'.");
+	        return;
+	    }
+	    
+	    System.out.println("\n═══════════════════════════════════");
+	    System.out.println("EVOLUÇÃO DE " + aluno.getNome().toUpperCase());
+	    System.out.println("Total de registros: " + historicos.size());
+	    System.out.println("═══════════════════════════════════");
+	    
+	    // Display all records
+	    for(int i = 0; i < historicos.size(); i++) {
+	        Historico h = historicos.get(i);
+	        System.out.println("\n" + (i + 1) + ". Data: " + h.getData());
+	        System.out.println("   Peso: " + String.format("%.2f", h.getPeso()) + " kg");
+	        System.out.println("   Massa Muscular: " + String.format("%.1f", h.getMassaMuscular()) + "%");
+	        System.out.println("   Massa Magra: " + String.format("%.2f", h.getMassaMagraKg()) + " kg");
+	        
+	        // Show progress from previous record
+	        if(i > 0) {
+	            Historico anterior = historicos.get(i - 1);
+	            double variacaoPeso = h.getPeso() - anterior.getPeso();
+	            double variacaoMassa = h.getMassaMuscular() - anterior.getMassaMuscular();
+	            
+	            System.out.println("   Progresso: Peso " + 
+	                (variacaoPeso >= 0 ? "+" : "") + String.format("%.2f", variacaoPeso) + " kg | " +
+	                "Massa " + (variacaoMassa >= 0 ? "+" : "") + String.format("%.1f", variacaoMassa) + "%");
+	        }
+	    }
+	    
+	    // Summary statistics
+	    if(historicos.size() >= 2) {
+	        Historico primeiro = historicos.get(0);
+	        Historico ultimo = historicos.get(historicos.size() - 1);
+	        
+	        double progressoPeso = ultimo.getPeso() - primeiro.getPeso();
+	        double progressoMassa = ultimo.getMassaMuscular() - primeiro.getMassaMuscular();
+	        
+	        System.out.println("\n═══════════════════════════════════");
+	        System.out.println("PROGRESSO TOTAL");
+	        System.out.println("─────────────────────────────────");
+	        System.out.println("Primeira medição: " + primeiro.getData());
+	        System.out.println("Última medição: " + ultimo.getData());
+	        System.out.println("─────────────────────────────────");
+	        System.out.println("Variação de peso: " + 
+	            (progressoPeso >= 0 ? "+" : "") + String.format("%.2f", progressoPeso) + " kg");
+	        System.out.println("Variação de massa muscular: " + 
+	            (progressoMassa >= 0 ? "+" : "") + String.format("%.1f", progressoMassa) + "%");
+	    }
+	    
+	    System.out.println("═══════════════════════════════════");
 	}
 
 	public static void consultarMinhaEvolucao(Aluno aluno) {
-	    System.out.println("\n=== MINHA EVOLUÇÃO ===");
-	    System.out.println("Funcionalidade em desenvolvimento...");
+	    System.out.println("\n═══ MINHA EVOLUÇÃO ═══");
+	    
+	    List<Historico> historicos = aluno.getHistoricos();
+	    
+	    if(historicos == null || historicos.isEmpty()) {
+	        System.out.println("\nVocê ainda não possui registros de evolução.");
+	        System.out.println("Procure seu instrutor para registrar suas medidas!");
+	        return;
+	    }
+	    
+	    System.out.println("\n═══════════════════════════════════");
+	    System.out.println("SEU PROGRESSO");
+	    System.out.println("Total de medições: " + historicos.size());
+	    System.out.println("═══════════════════════════════════");
+	    
+	    // Display all records with visual indicators
+	    for(int i = 0; i < historicos.size(); i++) {
+	        Historico h = historicos.get(i);
+	        System.out.println("\nMedição " + (i + 1) + " - " + h.getData());
+	        System.out.println("   Peso: " + String.format("%.2f", h.getPeso()) + " kg");
+	        System.out.println("   Massa Muscular: " + String.format("%.1f", h.getMassaMuscular()) + "%");
+	        System.out.println("   Massa Magra: " + String.format("%.2f", h.getMassaMagraKg()) + " kg");
+	        
+	        // Show progress with arrows
+	        if(i > 0) {
+	            Historico anterior = historicos.get(i - 1);
+	            double variacaoPeso = h.getPeso() - anterior.getPeso();
+	            double variacaoMassa = h.getMassaMuscular() - anterior.getMassaMuscular();
+	            
+	            String setaPeso = variacaoPeso > 0 ? "↑" : (variacaoPeso < 0 ? "↓" : "→");
+	            String setaMassa = variacaoMassa > 0 ? "↑" : (variacaoMassa < 0 ? "↓" : "→");
+	            
+	            System.out.println("   " + setaPeso + " Peso: " + 
+	                (variacaoPeso >= 0 ? "+" : "") + String.format("%.2f", variacaoPeso) + " kg");
+	            System.out.println("   " + setaMassa + " Massa: " + 
+	                (variacaoMassa >= 0 ? "+" : "") + String.format("%.1f", variacaoMassa) + "%");
+	        }
+	    }
+	    
+	    // Overall progress summary
+	    if(historicos.size() >= 2) {
+	        Historico primeiro = historicos.get(0);
+	        Historico ultimo = historicos.get(historicos.size() - 1);
+	        
+	        double progressoPeso = ultimo.getPeso() - primeiro.getPeso();
+	        double progressoMassa = ultimo.getMassaMuscular() - primeiro.getMassaMuscular();
+	        
+	        System.out.println("\n═══════════════════════════════════");
+	        System.out.println("🎯 PROGRESSO GERAL");
+	        System.out.println("─────────────────────────────────");
+	        System.out.println("Período: " + primeiro.getData() + " até " + ultimo.getData());
+	        System.out.println("─────────────────────────────────");
+	        
+	        // Weight progress
+	        if(progressoPeso > 0) {
+	            System.out.println("✓ Ganho de peso: +" + String.format("%.2f", progressoPeso) + " kg");
+	        } else if(progressoPeso < 0) {
+	            System.out.println("✓ Perda de peso: " + String.format("%.2f", progressoPeso) + " kg");
+	        } else {
+	            System.out.println("→ Peso mantido");
+	        }
+	        
+	        // Muscle mass progress
+	        if(progressoMassa > 0) {
+	            System.out.println("✓ Ganho de massa muscular: +" + String.format("%.1f", progressoMassa) + "%");
+	        } else if(progressoMassa < 0) {
+	            System.out.println("⚠ Perda de massa muscular: " + String.format("%.1f", progressoMassa) + "%");
+	        } else {
+	            System.out.println("→ Massa muscular mantida");
+	        }
+	        
+	        // Motivational message
+	        System.out.println("\n💪 Continue com o bom trabalho!");
+	    }
+	    
+	    System.out.println("═══════════════════════════════════");
 	}
 
 	public static void registrarFrequencia(Scanner sc, Aluno aluno) {

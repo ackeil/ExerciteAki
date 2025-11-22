@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import historico.Frequencia;
+import historico.Historico;
 import treino.Treino;
 
 import exceptions.*;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
@@ -25,6 +27,7 @@ public class Aluno extends Pessoa{
 
     private List<Treino> treinos;
     private List<Frequencia> frequencias;
+    private List<Historico> historicos;
 
     private int frequenciaSequencia = 0;
 
@@ -32,6 +35,7 @@ public class Aluno extends Pessoa{
         super();
         this.treinos     = new ArrayList<Treino>();
         this.frequencias = new ArrayList<Frequencia>();
+        this.historicos  = new ArrayList<Historico>();
     }
 
     public Aluno(String nome, String email, String telefone, String dataNascimento, float altura,
@@ -70,8 +74,9 @@ public class Aluno extends Pessoa{
 
         this.altura = altura;
         this.dataNascimento = dataNascimento;
-	this.treinos     = new ArrayList<Treino>();
-	this.frequencias = new ArrayList<Frequencia>();
+        this.treinos     = new ArrayList<Treino>();
+        this.frequencias = new ArrayList<Frequencia>();
+        this.historicos  = new ArrayList<Historico>();
     }
 
     public String getDataNascimento(){
@@ -114,7 +119,6 @@ public class Aluno extends Pessoa{
 
     public void addEntrada(){
         Frequencia freq = new Frequencia();
-
         this.frequencias.add(freq);
     }
 
@@ -128,27 +132,39 @@ public class Aluno extends Pessoa{
         this.frequenciaSequencia++;
     }
 
+    // ===== TREINO METHODS =====
+    
     public void setTreino(DiaDaSemana dia, Treino treino) {
         int indice = dia.getCodigo();
-
-        /* ERRO */
+        
+        // Ensure the list has enough elements
+        while(this.treinos.size() <= indice) {
+            this.treinos.add(null);
+        }
+        
         this.treinos.set(indice, treino);
     }
     
-    public Treino getTreino(DiaDaSemana dia) throws IndexOutOfBoundsException{
+    public Treino getTreino(DiaDaSemana dia) {
         int indice = dia.getCodigo();
         try{
-            return this.treinos.get(indice);
+            if(indice < this.treinos.size()) {
+                return this.treinos.get(indice);
+            }
+            return null;
         }catch(IndexOutOfBoundsException e){
-            throw new IndexOutOfBoundsException();
+            return null;
         }
     }
     
-    public Treino getTreinoPorIndice(int indice) throws IndexOutOfBoundsException{
+    public Treino getTreinoPorIndice(int indice) {
         try{
-            return this.treinos.get(indice);
+            if(indice < this.treinos.size()) {
+                return this.treinos.get(indice);
+            }
+            return null;
         }catch(IndexOutOfBoundsException e){
-            throw new IndexOutOfBoundsException();
+            return null;
         }
     }
     
@@ -160,6 +176,8 @@ public class Aluno extends Pessoa{
         this.treinos = treinos;
     }
 
+    // ===== FREQUENCIA METHODS =====
+    
     public String verificaFrequencia(LocalDate dataInicio, LocalDate dataFim){
     	if(dataInicio == null){
     		System.out.println("A data de inicio precisa ser informada");
@@ -202,6 +220,41 @@ public class Aluno extends Pessoa{
     
     public void setSequencia(int sequencia){
         this.frequenciaSequencia = sequencia;
+    }
+    
+    public List<Frequencia> getFrequencias() {
+        return this.frequencias;
+    }
+    
+    public void setFrequencias(List<Frequencia> frequencias) {
+        this.frequencias = frequencias;
+    }
+
+    public void addHistorico(Historico historico) {
+        if(historico != null) {
+            this.historicos.add(historico);
+        }
+    }
+    
+    public List<Historico> getHistoricos() {
+        return this.historicos;
+    }
+    
+    public void setHistoricos(List<Historico> historicos) {
+        this.historicos = historicos;
+    }
+    
+    @JsonIgnore
+    public Historico getUltimoHistorico() {
+        if(historicos.isEmpty()) {
+            return null;
+        }
+        return historicos.get(historicos.size() - 1);
+    }
+    
+    @JsonIgnore
+    public int getQuantHistoricos() {
+        return historicos.size();
     }
 
     @Override
