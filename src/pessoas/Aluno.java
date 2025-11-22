@@ -5,29 +5,33 @@ import util.DiaDaSemana;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import historico.Frequencia;
 import treino.Treino;
 
 import exceptions.*;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+
 public class Aluno extends Pessoa{
 
     private String dataNascimento;
     private float altura;
 
-    private Treino[] treinos;
-    private Frequencia[] frequencia;
+    private List<Treino> treinos;
+    private List<Frequencia> frequencias;
 
     private int frequenciaSequencia = 0;
 
-    private static final int MAX_TREINOS = 7;
-    private static final int MAX_FREQUENCIAS = 50;
-
     public Aluno(){
         super();
-        this.treinos = new Treino[MAX_TREINOS];
-        this.frequencia = new Frequencia[MAX_FREQUENCIAS];
+        this.treinos     = new ArrayList<Treino>();
+        this.frequencias = new ArrayList<Frequencia>();
     }
 
     public Aluno(String nome, String email, String telefone, String dataNascimento, float altura,
@@ -36,7 +40,7 @@ public class Aluno extends Pessoa{
         
         Validacoes valida = new Validacoes();
 
-        this.treinos = new Treino[MAX_TREINOS];
+        this.treinos = new ArrayList<Treino>();
         
         if(this.getNome() == null){
             return;
@@ -66,8 +70,8 @@ public class Aluno extends Pessoa{
 
         this.altura = altura;
         this.dataNascimento = dataNascimento;
-	this.treinos = new Treino[MAX_TREINOS];
-	this.frequencia = new Frequencia[MAX_FREQUENCIAS];
+	this.treinos     = new ArrayList<Treino>();
+	this.frequencias = new ArrayList<Frequencia>();
     }
 
     public String getDataNascimento(){
@@ -109,45 +113,51 @@ public class Aluno extends Pessoa{
     }
 
     public void addEntrada(){
-        if(this.frequencia[MAX_FREQUENCIAS-1] != null){
-            System.out.println("Não podem ser cadastradas mais frequencias");
-            return;
-        }
-
         Frequencia freq = new Frequencia();
 
-        this.frequencia[this.frequenciaSequencia] = freq;
+        this.frequencias.add(freq);
     }
 
-    public void addSaida(int posicao){
-        this.frequencia[posicao].gravaSaida();
+    public void addSaida(int posicao) throws IndexOutOfBoundsException{
+        try{
+            this.frequencias.get(posicao).gravaSaida();
+        }catch(IndexOutOfBoundsException e){
+            throw new IndexOutOfBoundsException();
+        }
+        
         this.frequenciaSequencia++;
     }
 
     public void setTreino(DiaDaSemana dia, Treino treino) {
         int indice = dia.getCodigo();
-        if(indice >= 0 && indice < MAX_TREINOS) {
-            this.treinos[indice] = treino;
-        }
+
+        /* ERRO */
+        this.treinos.set(indice, treino);
     }
     
-    public Treino getTreino(DiaDaSemana dia) {
+    public Treino getTreino(DiaDaSemana dia) throws IndexOutOfBoundsException{
         int indice = dia.getCodigo();
-        if(indice >= 0 && indice < MAX_TREINOS) {
-            return this.treinos[indice];
+        try{
+            return this.treinos.get(indice);
+        }catch(IndexOutOfBoundsException e){
+            throw new IndexOutOfBoundsException();
         }
-        return null;
     }
     
-    public Treino getTreinoPorIndice(int indice) {
-        if(indice >= 0 && indice < MAX_TREINOS) {
-            return this.treinos[indice];
+    public Treino getTreinoPorIndice(int indice) throws IndexOutOfBoundsException{
+        try{
+            return this.treinos.get(indice);
+        }catch(IndexOutOfBoundsException e){
+            throw new IndexOutOfBoundsException();
         }
-        return null;
     }
     
-    public Treino[] getTreinos() {
+    public List<Treino> getTreinos(){
         return this.treinos;
+    }
+    
+    public void setTreinos(List<Treino> treinos){
+        this.treinos = treinos;
     }
 
     public String verificaFrequencia(LocalDate dataInicio, LocalDate dataFim){
@@ -161,29 +171,26 @@ public class Aluno extends Pessoa{
     	Duration horas = Duration.ZERO;
     	LocalDate anterior = null;
 
-    	for(int i = 0;i <= this.frequencia.length; i++){
-    		if(this.frequencia[i] == null){
-    			break;
-    		}
-    		
-    		if(dataFim != null) {
-    			if(dataFim.isBefore(this.frequencia[i].getDia())){
+        for (Frequencia frequencia : frequencias) {
+            if(dataFim != null) {
+    			if(dataFim.isBefore(frequencia.getDia())){
     				break;
     			}
     		}
 
     		Duration t;
-    		if(dataInicio.isBefore(this.frequencia[i].getDia())){
-                t = this.frequencia[i].getHorasDiaria();
+    		if(dataInicio.isBefore(frequencia.getDia())){
+                t = frequencia.getHorasDiaria();
                 horas = horas.plus(t);
                 
-                if(anterior == null || !this.frequencia[i].getDia().equals(anterior)){
+                if(anterior == null || !frequencia.getDia().equals(anterior)){
                     dias++;
                 }
                 
-                anterior = this.frequencia[i].getDia();
+                anterior = frequencia.getDia();
     		}
-    	}
+        }
+
     	mensagem = "A frequencia do aluno é de " + dias + " dias, com um total de " + horas.toHours() + " horas e " + horas.toMinutes() + " minutos";
 
     	return mensagem;
@@ -191,6 +198,10 @@ public class Aluno extends Pessoa{
 
     public int getSequencia(){
         return this.frequenciaSequencia;
+    }
+    
+    public void setSequencia(int sequencia){
+        this.frequenciaSequencia = sequencia;
     }
 
     @Override

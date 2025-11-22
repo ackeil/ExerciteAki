@@ -1,75 +1,71 @@
 package treino;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
 import util.DiaDaSemana;
 
 public class Treino {
-	
-	public static final int MAX_EXERCICIOS = 25;
-	
-	private Exercicio[] exercicios;
+	private List<Exercicio> exercicios;
 	private int quantExercicios = 0;
 	private DiaDaSemana diaDaSemana;
 	
 	public Treino() {
-		this.exercicios = new Exercicio[MAX_EXERCICIOS];
+		this.exercicios = new ArrayList<Exercicio>();
 	}
 	
 	public Treino(DiaDaSemana diaDaSemana) {
+		this();
 		this.diaDaSemana = diaDaSemana;
-		this.exercicios = new Exercicio[MAX_EXERCICIOS];
 	}
 	
-	public boolean addExercicio(Exercicio e)
-	{
-		if(this.quantExercicios < MAX_EXERCICIOS)
-		{
-			this.exercicios[this.quantExercicios++] = e;
-			return true;
-		}
-		else
-		{
-			return false;
+	public void addExercicio(Exercicio exer) throws Exception{
+		try {
+			this.exercicios.add(exer);
+		}catch(UnsupportedOperationException e) {
+			throw new Exception("Não é possivel adicionar mais um exercicio.");
+		}catch(NullPointerException e) {
+			throw new Exception("Não é possível adicionar um exercício vazio.");
+		}catch(Exception e) {
+			throw new Exception("Exercício inválido.");
 		}
 	}
 	
-	public boolean removeExercicio(int indice)
-	{
-		if(indice < 0 || indice >= quantExercicios)
-		{
-			return false;
+	public boolean removeExercicio(int indice) throws Exception{
+		try {
+			this.exercicios.remove(indice);
+		}catch(UnsupportedOperationException e) {
+			throw new Exception("Erro ao remover exercicio");
+		}catch(IndexOutOfBoundsException e) {
+			throw new IndexOutOfBoundsException();
 		}
-		
-		for(int i = indice; i < quantExercicios - 1; i++)
-		{
-			exercicios[i] = exercicios[i + 1];
-		}
-		
-		exercicios[--quantExercicios] = null;
 		return true;
+
 	}
 	
-	public Exercicio getExercicio(int index)
-	{
-		if(index >= 0 && index < this.quantExercicios)
-		{
-			return this.exercicios[index];
-		}
-		else
-		{
-			return null;
+	public Exercicio getExercicio(int index) throws IndexOutOfBoundsException{
+		try {
+			return this.exercicios.get(index);
+		}catch(IndexOutOfBoundsException e) {
+			throw new IndexOutOfBoundsException();
 		}
 	}
 	
-	public Exercicio[] getExercicios() {
-        Exercicio[] validos = new Exercicio[quantExercicios];
-        System.arraycopy(exercicios, 0, validos, 0, quantExercicios);
-        return validos;
+	public List<Exercicio> getExercicios() {
+        return this.exercicios;
     }
 	
-	public int getQuantExercicios()
-	{
+	public void setExercicios(List<Exercicio> exercicios) {
+        this.exercicios = exercicios;
+    }
+	
+	public int getQuantExercicios(){
 		return this.quantExercicios;
+	}
+	
+	public void setQuantExercicios(int qtdDias){
+		this.quantExercicios = qtdDias;
 	}
 
 	public DiaDaSemana getDiaDaSemana() {
@@ -82,7 +78,7 @@ public class Treino {
 
 	@Override
 	public String toString() {
-		return "Treino [exercicios=" + Arrays.toString(exercicios) + ", quantExercicios=" + quantExercicios
+		return "Treino [exercicios=" + exercicios.toString() + ", quantExercicios=" + quantExercicios
 				+ ", diaDaSemana=" + diaDaSemana + "]";
 	}
 	

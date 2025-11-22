@@ -5,6 +5,11 @@ import sistema.Login;
 
 import exceptions.*;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+
 public abstract class Pessoa{
 
     private String nome;
@@ -120,6 +125,10 @@ public abstract class Pessoa{
 
     public Login getLogin(){
         return this.login;
+    }
+    
+    public void setLogin(Login login){
+        this.login = login;
     }
 
     @Override

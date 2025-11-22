@@ -1,13 +1,18 @@
 package treino;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+
 public class Aparelho {
-	
+
 	private static int contadorID = 1;
 	private int ID;
 	private String nome;
 	private String descricao;
 	private String funcao;
-	
+
 	public Aparelho() {
 		this.ID = contadorID++;
 	};
@@ -20,9 +25,12 @@ public class Aparelho {
 		this.funcao = funcao;
 	}
 	
-	public int getID()
-	{
+	public int getID(){
 		return ID;
+	}
+	
+	public void setID(int ID){
+		this.ID = ID;
 	}
 	
 	public String getNome() {

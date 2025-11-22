@@ -1,7 +1,11 @@
 package principal;
 
+import java.io.File;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Scanner;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pessoas.Aluno;
 import pessoas.Instrutor;
@@ -13,6 +17,7 @@ import treino.Exercicio;
 import treino.Treino;
 import util.DiaDaSemana;
 import util.Validacoes;
+import util.ManipulacaoArquivos;
 
 import exceptions.*;
 
@@ -20,29 +25,15 @@ public class Principal {
 	
 	private static final String USERNAME_ADMIN = "admin";
 	private static final String SENHA_ADMIN = "1234";
+	private static final String caminho_arquivo = "dados/DadosSalvos.txt";
+
+	private ObjectMapper mapper;
 	
-	public static void main(String[] args) {
-	    Scanner sc = new Scanner(System.in);
-	    Academia academia = criarAcademia();
-	    
-	    dadosDeTeste(academia);
-	    testarExcecoes();
-	    
-	    System.out.println("═══════════════════════════════════════");
-	    System.out.println("    BEM-VINDO AO SISTEMA EXERCITEAKI    ");
-	    System.out.println("═══════════════════════════════════════");
-	    
-	    boolean continuar = true;
-	    
-	    while(continuar) {
-	        continuar = menuPrincipal(sc, academia);
-	    }
-	    
-	    System.out.println("\nObrigado por usar o sistema ExerciteAki!");
-	    sc.close();
+	public Principal() {
+		this.mapper = new ObjectMapper();
 	}
 	
-	private static void dadosDeTeste(Academia academia) {
+	private void dadosDeTeste(Academia academia) {
 	    System.out.println("--- CADASTRANDO APARELHOS ---\n");
 	    
 	    Aparelho supino = new Aparelho(
@@ -185,225 +176,46 @@ public class Principal {
 	    System.out.println("═══════════════════════════════════════\n");
 	}
 	
-	private static void testarExcecoes() {
-	    Validacoes val = new Validacoes();
-	    int passou = 0, falhou = 0;
+	public static void main(String[] args) throws Exception {
+	    Scanner sc = new Scanner(System.in);
+	    Academia academia = criarAcademia();
 	    
-	    System.out.println("TESTE 1: Email válido");
+	    Principal p = new Principal();
+	    
+	    File f = new File(caminho_arquivo);
 	    try {
-	        val.validaEmail("carlos.silva@exerciteaki.com.br");
-	        System.out.println("Email válido aceito\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
+	    
+	    	if(!f.exists()) {
+	    		if(!f.createNewFile()) {
+	    			System.out.println("Erro na leitura do arquivo: \"Dados Salvos\".");
+	    		}
+	    	}
+	    }catch(Exception e) {
+	    	System.out.println(e.getMessage());
+	    }
+
+		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+		academia = arq.leArquivoJSON(caminho_arquivo);
+
+		/*
+		p.dadosDeTeste(academia); 
+		*/
+	    
+	    System.out.println("═══════════════════════════════════════");
+	    System.out.println("    BEM-VINDO AO SISTEMA EXERCITEAKI    ");
+	    System.out.println("═══════════════════════════════════════");
+	    
+	    boolean continuar = true;
+	    
+	    while(continuar) {
+	        continuar = p.menuPrincipal(sc, academia);
 	    }
 	    
-	    System.out.println("TESTE 2: Email inválido (deve rejeitar)");
-	    try {
-	        val.validaEmail("emailinvalido");
-	        System.out.println("FALHOU: Email inválido foi aceito\n");
-	        falhou++;
-	    } catch (InvalidEmailException e) {
-	        System.out.println("Email inválido corretamente rejeitado\n");
-	        passou++;
-	    } catch (EmptyFieldException e) {
-	        System.out.println("FALHOU: Exceção errada lançada\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 3: Telefone válido");
-	    try {
-	        val.validaTelefone("(54) 99999-9999");
-	        System.out.println("Telefone válido aceito\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 4: Telefone inválido (deve rejeitar)");
-	    try {
-	        val.validaTelefone("(00) 99999-9999");
-	        System.out.println("FALHOU: Telefone inválido foi aceito\n");
-	        falhou++;
-	    } catch (InvalidPhoneException e) {
-	        System.out.println("Telefone inválido corretamente rejeitado\n");
-	        passou++;
-	    } catch (EmptyFieldException e) {
-	        System.out.println("FALHOU: Exceção errada lançada\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 5: Nome válido com espaço");
-	    try {
-	        val.validaNome("Carlos Silva");
-	        System.out.println("Nome válido aceito\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 6: Nome com números (deve rejeitar)");
-	    try {
-	        val.validaNome("Carlos123");
-	        System.out.println("FALHOU: Nome inválido foi aceito\n");
-	        falhou++;
-	    } catch (InvalidNameException e) {
-	        System.out.println("Nome inválido corretamente rejeitado\n");
-	        passou++;
-	    } catch (EmptyFieldException e) {
-	        System.out.println("FALHOU: Exceção errada lançada\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 7: Data válida");
-	    try {
-	        val.validaData("15/06/2000");
-	        System.out.println("Data válida aceita\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 8: Data inválida - 29/02 ano não bissexto (deve rejeitar)");
-	    try {
-	        val.validaData("29/02/2023");
-	        System.out.println("FALHOU: Data inválida foi aceita\n");
-	        falhou++;
-	    } catch (InvalidDateException e) {
-	        System.out.println("Data inválida corretamente rejeitada\n");
-	        passou++;
-	    } catch (EmptyFieldException e) {
-	        System.out.println("FALHOU: Exceção errada lançada\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 9: Altura válida");
-	    try {
-	        val.validaAltura(1.75f);
-	        System.out.println("Altura válida aceita\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 10: Altura muito baixa (deve rejeitar)");
-	    try {
-	        val.validaAltura(0.3f);
-	        System.out.println("FALHOU: Altura inválida foi aceita\n");
-	        falhou++;
-	    } catch (InvalidHeightException e) {
-	        System.out.println("Altura inválida corretamente rejeitada\n");
-	        passou++;
-	    }
-	    
-	    System.out.println("TESTE 11: Formação válida");
-	    try {
-	        val.validaFormacao("Educação Física");
-	        System.out.println("Formação válida aceita\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 12: Formação com números (deve rejeitar)");
-	    try {
-	        val.validaFormacao("Formação123");
-	        System.out.println("FALHOU: Formação inválida foi aceita\n");
-	        falhou++;
-	    } catch (InvalidFormacaoException e) {
-	        System.out.println("Formação inválida corretamente rejeitada\n");
-	        passou++;
-	    } catch (EmptyFieldException e) {
-	        System.out.println("FALHOU: Exceção errada lançada\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 13: Número válido de repetições");
-	    try {
-	        val.validaRepeticoes(15);
-	        System.out.println("Repetições válidas aceitas\n");
-	        passou++;
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 14: Repetições excessivas - 100 (deve rejeitar)");
-	    try {
-	        val.validaRepeticoes(100);
-	        System.out.println("FALHOU: Repetições excessivas foram aceitas\n");
-	        falhou++;
-	    } catch (ExcessiveRepetitionsException e) {
-	        System.out.println("Repetições excessivas corretamente rejeitadas\n");
-	        passou++;
-	    }
-	    
-	    System.out.println("TESTE 15: Criar aluno válido");
-	    try {
-	        Aluno aluno = new Aluno(
-	            "João Silva",
-	            "joao@example.com",
-	            "(54) 99999-9999",
-	            "15/06/2000",
-	            1.75f,
-	            "joao",
-	            "senha123"
-	        );
-	        if(aluno.getNome() != null) {
-	            System.out.println("Aluno válido criado com sucesso\n");
-	            passou++;
-	        } else {
-	            System.out.println("FALHOU: Aluno criado mas dados são nulos\n");
-	            falhou++;
-	        }
-	    } catch (Exception e) {
-	        System.out.println("FALHOU: " + e.getMessage() + "\n");
-	        falhou++;
-	    }
-	    
-	    System.out.println("TESTE 16: Criar aluno com email inválido (deve falhar)");
-	    try {
-	        Aluno aluno = new Aluno(
-	            "Maria Silva",
-	            "email_invalido",
-	            "(54) 99999-9999",
-	            "15/06/2000",
-	            1.65f,
-	            "maria",
-	            "senha123"
-	        );
-	        if(aluno.getNome() == null) {
-	            System.out.println("Aluno inválido corretamente rejeitado\n");
-	            passou++;
-	        } else {
-	            System.out.println("FALHOU: Aluno inválido foi criado\n");
-	            falhou++;
-	        }
-	    } catch (Exception e) {
-	        System.out.println("Exceção lançada corretamente\n");
-	        passou++;
-	    }
-	    
-	    // ===== RESULTADO FINAL =====
-	    System.out.println("╔═══════════════════════════════════════╗");
-	    System.out.println("║         RESULTADO FINAL               ║");
-	    System.out.println("╠═══════════════════════════════════════╣");
-	    System.out.println("║  Total de testes: " + (passou + falhou) + "                  ║");
-	    System.out.println("║  Testes passaram: " + passou + "                  ║");
-	    System.out.println("║  Testes falharam: " + falhou + "                   ║");
-	    double taxa = (passou * 100.0) / (passou + falhou);
-	    System.out.println("║  Taxa de sucesso: " + String.format("%.1f%%", taxa) + "              ║");
-	    System.out.println("╚═══════════════════════════════════════╝\n");
-	    
+	    System.out.println("\nObrigado por usar o sistema ExerciteAki!");
+	    sc.close();
 	}
 	
-	public static boolean menuPrincipal(Scanner sc, Academia academia) {
+	public boolean menuPrincipal(Scanner sc, Academia academia) {
 	    System.out.println("\n═══ MENU PRINCIPAL ═══");
 	    System.out.println("[1] - Login");
 	    System.out.println("[0] - Sair do Sistema");
@@ -867,7 +679,7 @@ public class Principal {
 	    System.out.println("\n=== ADICIONAR EXERCÍCIOS AO TREINO ===\n");
 	    boolean adicionarMais = true;
 	    
-	    while(adicionarMais && novoTreino.getQuantExercicios() < Treino.MAX_EXERCICIOS) {
+	    while(adicionarMais) {
 	        System.out.println("\n--- Exercício " + (novoTreino.getQuantExercicios() + 1) + " ---");
 	        
 	        System.out.print("\nDigite o nome do aparelho: ");
@@ -880,23 +692,23 @@ public class Principal {
 	            continue;
 	        }
 	        
-	        Aparelho[] aparelhosEncontrados = academia.buscaAparelhosLista(nomeAparelho);
-	        if(aparelhosEncontrados[0] == null) {
+	        List<Aparelho> aparelhosEncontrados = academia.buscaAparelhosLista(nomeAparelho);
+	        if(aparelhosEncontrados.isEmpty()) {
 	        	System.out.println("\nNenhum aparelho encontrado.\n");
 	        	continue;
 	        }
 	        
-	        int codigoAparelho = -1;
-	        if(aparelhosEncontrados[1] == null) {
-	        	codigoAparelho = aparelhosEncontrados[0].getID();
+	        int codigoAparelho;
+	        if(aparelhosEncontrados.size() == 1) {
+	        	codigoAparelho = aparelhosEncontrados.get(0).getID();
 	        }else {
 	        	int escolha = 0;
 	        	int i = 0;
 	        	System.out.println("\n═══ APARELHOS ENCONTRADOS ═══\n");
-	        	while(aparelhosEncontrados[i] != null) {
-	        		System.out.println((i+1) + ") Nome do aparelho: " + aparelhosEncontrados[i].getNome() + "\n");
-	        		i++;
-	        	}
+				for (Aparelho aparelho : aparelhosEncontrados) {
+					i++;
+					System.out.println(i + ") Nome do aparelho: " + aparelho.getNome() + "\n");
+				}
 
 	        	do {
 	        		System.out.print("\nSelecione o número do aparelho desejado: ");
@@ -907,12 +719,25 @@ public class Principal {
 	    	            System.out.println("\nErro: Informe apenas números!\ns");
 	        		}
 	        		
-	        		if(aparelhosEncontrados[escolha-1] == null) {
-	        			System.out.println("\nOpção inválida.\n");
-	        			escolha = 0;
-	        		}
+					try{
+						if(aparelhosEncontrados.get(escolha-1) == null) {
+	        				System.out.println("\nOpção inválida.\n");
+	        				continue;
+	        			}
+					}catch(IndexOutOfBoundsException e){
+						System.out.println("\nOpção inválida.\n");
+						continue;
+					}
+	        		
 	        	}while(escolha == 0);
-	        	codigoAparelho = aparelhosEncontrados[escolha-1].getID();
+
+				try{
+					codigoAparelho = aparelhosEncontrados.get(escolha-1).getID();
+				}catch(IndexOutOfBoundsException e){
+					System.out.println("Erro ao buscar ao buscar os dados do aparelho.");
+					return;
+				}
+	        	
 	        }
 	        
 	        Aparelho aparelho = academia.buscarAparelhoPorCodigo(codigoAparelho);
@@ -961,23 +786,30 @@ public class Principal {
 	        }
 	        
 	        Exercicio exercicio = new Exercicio(aparelho, carga, repeticoes);
-	        if(novoTreino.addExercicio(exercicio)) {
-	            System.out.println("Exercício adicionado com sucesso!");
-	        } else {
-	            System.out.println("Erro ao adicionar exercício!");
+	        
+	        try {
+	        	novoTreino.addExercicio(exercicio);
+		        System.out.println("Exercício adicionado com sucesso!");
+	        }catch(Exception e){
+	        	System.out.println(e.getMessage());
 	        }
 	        
-	        if(novoTreino.getQuantExercicios() < Treino.MAX_EXERCICIOS) {
-	            System.out.print("\nAdicionar mais exercícios? (S/N): ");
-	            String resposta = sc.nextLine();
-	            adicionarMais = resposta.equalsIgnoreCase("S");
-	        } else {
-	            System.out.println("\nLimite máximo de exercícios atingido!");
-	            adicionarMais = false;
-	        }
+	        System.out.print("\nAdicionar mais exercícios? (S/N): ");
+	        String resposta = sc.nextLine();
+	        adicionarMais = resposta.equalsIgnoreCase("S");
+
 	    }
 	    
 	    aluno.setTreino(diaSelecionado, novoTreino);
+	    
+	    Principal p = new Principal();
+		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+	    try{
+			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+			arq.gravaJSONPessoa(caminho_arquivo, json);
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+		}
 	    
 	    System.out.println("\n═══════════════════════════════════");
 	    System.out.println("Treino definido com sucesso!");
@@ -1249,6 +1081,15 @@ public class Principal {
 	    academia.setWebsite(website);
 	    academia.setEndereco(endereco);
 	    
+	    Principal p = new Principal();
+		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+	    try{
+			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+			arq.gravaJSONPessoa(caminho_arquivo, json);
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+		}
+	    
 	    System.out.println("\nAcademia cadastrada com sucesso!");
 	}
 	
@@ -1369,6 +1210,16 @@ public class Principal {
 	    }
 	    
 	    if(academia.addAluno(alunoCriado)) {
+	    	Principal p = new Principal();
+			ManipulacaoArquivos arq = new ManipulacaoArquivos();
+		    try{
+				String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+				arq.gravaJSONPessoa(caminho_arquivo, json);
+			}catch(Exception e){
+				System.out.println(e.getMessage());
+				return false;
+			}
+		    
 	        System.out.println("\n" + alunoCriado.toString());
 	        return true;
 	    } else {
@@ -1425,7 +1276,15 @@ public class Principal {
         float novaAltura = sc.nextFloat();
         
         if(academia.alterarAluno(emailAtual, novoNome, novoEmail, novoTelefone, novaData, novaAltura)) {
-            System.out.println("Aluno alterado com sucesso!");
+        	Principal p = new Principal();
+    		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+    	    try{
+    			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+    			arq.gravaJSONPessoa(caminho_arquivo, json);
+    			System.out.println("Aluno alterado com sucesso!");
+    		}catch(Exception e){
+    			System.out.println(e.getMessage());
+    		}
         } else {
             System.out.println("Erro ao alterar aluno!");
         }
@@ -1444,7 +1303,15 @@ public class Principal {
             
             if(confirmacao.equalsIgnoreCase("S")) {
                 if(academia.removerAluno(email)) {
-                    System.out.println("Aluno removido com sucesso!");
+                	Principal p = new Principal();
+            		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+            	    try{
+            			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+            			arq.gravaJSONPessoa(caminho_arquivo, json);
+            			System.out.println("Aluno removido com sucesso!");
+            		}catch(Exception e){
+            			System.out.println(e.getMessage());
+            		}
                 } else {
                     System.out.println("Erro ao remover aluno!");
                 }
@@ -1550,6 +1417,16 @@ public class Principal {
 	    }
 	    
 	    if(academia.addInstrutor(instrutorCriado)) {
+	    	Principal p = new Principal();
+    		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+    	    try{
+    			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+    			arq.gravaJSONPessoa(caminho_arquivo, json);
+    		}catch(Exception e){
+    			System.out.println(e.getMessage());
+    			return false;
+    		}
+    	    
 	        System.out.println("\nInstrutor cadastrado com sucesso!");
 	        System.out.println(instrutorCriado.toString());
 	        return true;
@@ -1603,7 +1480,15 @@ public class Principal {
         String novaFormacao = sc.nextLine();
         
         if(academia.alterarInstrutor(emailAtual, novoNome, novoEmail, novoTelefone, novaFormacao)) {
-            System.out.println("Instrutor alterado com sucesso!");
+        	Principal p = new Principal();
+    		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+    	    try{
+    			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+    			arq.gravaJSONPessoa(caminho_arquivo, json);
+    			System.out.println("Instrutor alterado com sucesso!");
+    		}catch(Exception e){
+    			System.out.println(e.getMessage());
+    		}
         } else {
             System.out.println("Erro ao alterar instrutor!");
         }
@@ -1622,7 +1507,15 @@ public class Principal {
             
             if(confirmacao.equalsIgnoreCase("S")) {
                 if(academia.removerInstrutor(email)) {
-                    System.out.println("Instrutor removido com sucesso!");
+                	Principal p = new Principal();
+            		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+            	    try{
+            			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+            			arq.gravaJSONPessoa(caminho_arquivo, json);
+            			System.out.println("Instrutor removido com sucesso!");
+            		}catch(Exception e){
+            			System.out.println(e.getMessage());
+            		}
                 } else {
                     System.out.println("Erro ao remover instrutor!");
                 }
@@ -1669,6 +1562,18 @@ public class Principal {
 	    Aparelho aparelhoCriado = new Aparelho(nome, descricao, funcao);
 	    
 	    academia.addAparelho(aparelhoCriado);
+	    
+	    Principal p = new Principal();
+		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+	    try{
+			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+			arq.gravaJSONPessoa(caminho_arquivo, json);
+			System.out.println("Instrutor alterado com sucesso!");
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+			return false;
+		}
+	    
 	    System.out.println("\nAparelho cadastrado com sucesso!");
 	    System.out.println(aparelhoCriado.toString());
 	    return true;
@@ -1776,6 +1681,17 @@ public class Principal {
 	    }
 	    
 	    if(academia.alterarAparelho(codigo, novoNome, novaDescricao, novaFuncao)) {
+	    	Principal p = new Principal();
+    		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+    	    try{
+    			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+    			arq.gravaJSONPessoa(caminho_arquivo, json);
+    			System.out.println("Instrutor alterado com sucesso!");
+    		}catch(Exception e){
+    			System.out.println(e.getMessage());
+    			return;
+    		}
+    	    
 	        System.out.println("\nAparelho alterado com sucesso!");
 	        Aparelho aparelhoAtualizado = academia.buscarAparelhoPorCodigo(codigo);
 	        System.out.println(aparelhoAtualizado.toString());
@@ -1811,6 +1727,18 @@ public class Principal {
 	        
 	        if(confirmacao.equalsIgnoreCase("S")) {
 	            if(academia.removerAparelho(codigo)) {
+
+	            	Principal p = new Principal();
+	        		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+	        	    try{
+	        			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+	        			arq.gravaJSONPessoa(caminho_arquivo, json);
+	        			System.out.println("Instrutor alterado com sucesso!");
+	        		}catch(Exception e){
+	        			System.out.println(e.getMessage());
+	        			return;
+	        		}
+
 	                System.out.println("Aparelho removido com sucesso!");
 	            } else {
 	                System.out.println("Erro ao remover aparelho!");
@@ -1913,6 +1841,17 @@ public class Principal {
                     HorarioFuncionamento horario = new HorarioFuncionamento(dia, abertura, fechamento);
                     academia.setHorarioFuncionamento(i, horario);
                     
+                    Principal p = new Principal();
+            		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+            	    try{
+            			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+            			arq.gravaJSONPessoa(caminho_arquivo, json);
+            			System.out.println("Instrutor alterado com sucesso!");
+            		}catch(Exception e){
+            			System.out.println(e.getMessage());
+            			return;
+            		}
+                    
                     System.out.println("\nHorário definido com sucesso!");
                     
                 } catch(Exception e) {
@@ -1923,6 +1862,18 @@ public class Principal {
             }else{
             	if(abre.equalsIgnoreCase("N")) {
             		academia.setHorarioFuncionamento(i, null);
+            		
+            		Principal p = new Principal();
+            		ManipulacaoArquivos arq = new ManipulacaoArquivos();
+            	    try{
+            			String json = p.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(academia);
+            			arq.gravaJSONPessoa(caminho_arquivo, json);
+            			System.out.println("Instrutor alterado com sucesso!");
+            		}catch(Exception e){
+            			System.out.println(e.getMessage());
+            			return;
+            		}
+
                     System.out.println("Academia fechada neste dia.");
             	}else {
                     System.out.println("\nValor inválido.");

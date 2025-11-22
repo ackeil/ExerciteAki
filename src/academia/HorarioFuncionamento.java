@@ -5,6 +5,11 @@ import java.time.format.DateTimeFormatter;
 
 import util.DiaDaSemana;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+
 public class HorarioFuncionamento {
 	
 	private DiaDaSemana diaDaSemana;

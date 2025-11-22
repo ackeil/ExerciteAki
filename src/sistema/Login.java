@@ -19,8 +19,16 @@ public class Login{
     public String getUsername() {
         return this.username;
     }
+   
+    public void setUsername(String user) {
+        this.username = user;
+    }
     
     public String getSenha() {
         return this.senha;
+    }
+    
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 }

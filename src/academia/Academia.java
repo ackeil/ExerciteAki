@@ -6,36 +6,41 @@ import pessoas.Instrutor;
 import util.Validacoes;
 import exceptions.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+
 public class Academia {
-	
-	public static final int MAX_APARELHOS = 254;
-	public static final int MAX_ALUNOS = 254;
-	public static final int MAX_INSTRUTORES = 254;
-	
+
 	private String nome;
 	private Endereco endereco;
 	private String telefone;
 	private String website;
-	private HorarioFuncionamento[] horariosFuncionamento;
-	private Aparelho[] aparelhos;
-	private Aluno[] alunos;
-	private Instrutor[] instrutores;
+	private List<HorarioFuncionamento> horariosFuncionamento;
+	private List<Aparelho> aparelhos;
+	private List<Aluno> alunos;
+	private List<Instrutor> instrutores;
 	private int ultimoAparelho = 0;
 	private int ultimoAluno = 0;
 	private int ultimoInstrutor = 0;
 
-	public Academia() {}
+	public Academia() {
+		this.horariosFuncionamento = new ArrayList<HorarioFuncionamento>();
+		this.aparelhos 			   = new ArrayList<Aparelho>();
+		this.alunos 			   = new ArrayList<Aluno>();
+		this.instrutores		   = new ArrayList<Instrutor>();
+	}
 
 	public Academia(String nome, Endereco endereco, String telefone, String website) {
-		super();
-		this.nome = nome;
-		this.endereco = endereco;
-		this.telefone = telefone;
-		this.website = website;
-		this.horariosFuncionamento = new HorarioFuncionamento[7];
-		this.aparelhos = new Aparelho[MAX_APARELHOS];
-		this.alunos = new Aluno[MAX_ALUNOS];
-		this.instrutores = new Instrutor[MAX_INSTRUTORES];
+		this();
+		this.nome 				   = nome;
+		this.endereco			   = endereco;
+		this.telefone 			   = telefone;
+		this.website 			   = website;
 	}
 
 	public String getNome() {
@@ -83,121 +88,132 @@ public class Academia {
 		}
 	}
 
-	public HorarioFuncionamento[] getHorariosFuncionamento() {
-		return horariosFuncionamento;
+	public List<HorarioFuncionamento> getHorariosFuncionamento() {
+		return this.horariosFuncionamento;
 	}
 	
-	public HorarioFuncionamento getHorarioFuncionamento(int index) {
-	    if(index >= 0 && index < 7) {  
-	        return this.horariosFuncionamento[index];
+	public void setHorariosFuncionamento(List<HorarioFuncionamento> horarios) {
+		this.horariosFuncionamento = horarios;
+	}
+	
+	public HorarioFuncionamento getHorarioFuncionamento(int index) throws IndexOutOfBoundsException{
+	    try {
+	    	return this.horariosFuncionamento.get(index);
+	    }catch(IndexOutOfBoundsException e) {
+	    	throw new IndexOutOfBoundsException();
 	    }
-	    return null;
 	}
 	
 	public void setHorarioFuncionamento(int index, HorarioFuncionamento nHorario)
 	{
 		if(index >= 0 && index < 7)
 		{
-			this.horariosFuncionamento[index] = nHorario;
+			this.horariosFuncionamento.add(index, nHorario);
 		}
 	}
 
-	public Aparelho[] getAparelhos() {
+	public List<Aparelho> getAparelhos() {
 		return aparelhos;
 	}
 	
-	public void addAparelho(Aparelho nAparelho)
-	{
-		if(this.ultimoAparelho < MAX_APARELHOS)
-		{
-			this.aparelhos[this.ultimoAparelho++] = nAparelho;
-		}
+	public void setAparelhos(List<Aparelho> aparelhos) {
+		this.aparelhos = aparelhos;
+	}
+	
+	public void addAparelho(Aparelho nAparelho){
+		this.aparelhos.add(nAparelho);
 	}
 	
 	public Aparelho buscarAparelhoPorCodigo(int ID) {
-	    for (int i = 0; i < ultimoAparelho; i++) {
-	        if (aparelhos[i].getID() == ID) {
-	            return aparelhos[i];
-	        }
+        if (aparelhos.size() <= ID) {
+	        return aparelhos.get(ID);
 	    }
 	    return null;
 	}
 
 	public Aparelho buscarAparelhoPorNome(String nome) {
-	    if (nome == null || nome.trim().isEmpty()) return null;
+	    if (nome.isEmpty() || nome.isBlank()){
+			return null;
+		}
 	    
-	    String nomeBusca = nome.trim().toLowerCase();
-	    for (int i = 0; i < ultimoAparelho; i++) {
-	        if (aparelhos[i].getNome().toLowerCase().contains(nomeBusca)) {
-	            return aparelhos[i];
-	        }
-	    }
-	    return null;
+		Aparelho auxAparelho = null;
+		nome = nome.trim();
+
+		for (Aparelho aparelho : aparelhos) {
+			if(aparelho.getNome().trim().equalsIgnoreCase(nome)){
+				auxAparelho = aparelho;
+				break;
+			}
+		}
+
+	    return auxAparelho;
 	}
 	
-	public boolean removerAparelho(int ID) {
-	    for (int i = 0; i < ultimoAparelho; i++) {
-	        if (aparelhos[i].getID() == ID) {
-	            // Shift
-	            for (int j = i; j < ultimoAparelho - 1; j++) {
-	                aparelhos[j] = aparelhos[j + 1];
-	            }
-	            aparelhos[--ultimoAparelho] = null;
-	            return true;
-	        }
-	    }
-	    return false;
+	public boolean removerAparelho(int ID) throws IndexOutOfBoundsException{
+		try{
+			aparelhos.remove(ID);
+		}catch(IndexOutOfBoundsException e){
+			throw new IndexOutOfBoundsException();
+		}
+
+	    return true;
 	}
 	
 	public boolean alterarAparelho(int codigo, String novoNome, String novaDescricao, String novaFuncao) {
         Aparelho aparelho = buscarAparelhoPorCodigo(codigo);
-        if (aparelho == null) return false;
+        if (aparelho == null){
+			return false;
+		}
         
-        if (novoNome != null && !novoNome.trim().isEmpty()) {
+        if (!novoNome.isEmpty() && !novoNome.isBlank()) {
             aparelho.setNome(novoNome);
         }
-        if (novaDescricao != null) {
+        if (!novaDescricao.isEmpty() && !novaDescricao.isBlank()) {
             aparelho.setDescricao(novaDescricao);
         }
-        if (novaFuncao != null) {
+        if (!novaFuncao.isBlank() && !novaFuncao.isEmpty()) {
             aparelho.setFuncao(novaFuncao);
         }
         
         return true;
     }
 	
-	public int getQuantAparelhos()
-	{
+	public int getQuantAparelhos(){
 		return this.ultimoAparelho;
+	}
+	
+	public void setQuantAparelhos(int quantAparelhos){
+		this.ultimoAparelho = quantAparelhos;
 	}
 	
 	public void listarAparelhos() {
         System.out.println("\n═══ APARELHOS CADASTRADOS ═══\n");
         if (ultimoAparelho == 0) {
             System.out.println("(Nenhum aparelho cadastrado)");
-        } else {
-            for (int i = 0; i < ultimoAparelho; i++) {
-                System.out.println(aparelhos[i].toString());
-            }
+			return;
         }
-        System.out.println("\nTotal: " + ultimoAparelho + "/" + MAX_APARELHOS);
+
+		for (Aparelho aparelho : aparelhos) {
+			System.out.println(aparelho.toString());
+		}
+
+        System.out.println("\nTotal: " + ultimoAparelho + ".");
     }
 	
-	public Aparelho[] buscaAparelhosLista(String nome) {
-        if (nome == null || nome.trim().isEmpty()) {
+	public List<Aparelho> buscaAparelhosLista(String nome) {
+        if (nome.isEmpty() || nome.isBlank()) {
         	return null;
         }
         
-        Aparelho[] aparelhosEncontrados = new Aparelho[MAX_APARELHOS];
-        int posicaoEncontrada = 0;
+        List<Aparelho> aparelhosEncontrados = new ArrayList<Aparelho>();
 	    
 	    String nomeBusca = nome.trim().toLowerCase();
-	    for (int i = 0; i < ultimoAparelho; i++) {
-	        if (aparelhos[i].getNome().toLowerCase().contains(nomeBusca)) {
-	        	aparelhosEncontrados[posicaoEncontrada] = aparelhos[i];
-	        	posicaoEncontrada++;
+
+		for (Aparelho aparelho : aparelhos) {
+			if (aparelho.getNome().toLowerCase().contains(nomeBusca)) {
+	        	aparelhosEncontrados.add(aparelho);
 	        }
-	    }
+		}
 	   
 	    return aparelhosEncontrados;
 	}
@@ -208,26 +224,22 @@ public class Academia {
 	        return false;
 	    }
 	    
-	    if(this.ultimoAluno < MAX_ALUNOS) {
-	        this.alunos[this.ultimoAluno++] = novoAluno;
-	        return true;
-	    } else {
-	        System.out.println("Capacidade máxima de alunos atingida!");
-	        return false;
-	    }
+		this.alunos.add(novoAluno);
+		return true;
 	}
 
 	public Aluno buscarAlunoPorNome(String nome) {
-	    if(nome == null || nome.trim().isEmpty()) {
+	    if(nome.isBlank() || nome.isEmpty()) {
 	        return null;
 	    }
 	    
 	    String nomeBusca = nome.trim().toLowerCase();
-	    for(int i = 0; i < ultimoAluno; i++) {
-	        if(alunos[i].getNome().toLowerCase().contains(nomeBusca)) {
-	            return alunos[i];
+		for (Aluno aluno : alunos) {
+			if(aluno.getNome().toLowerCase().contains(nomeBusca)) {
+	            return aluno;
 	        }
-	    }
+		}
+
 	    return null;
 	}
 
@@ -237,61 +249,61 @@ public class Academia {
 	    }
 	    
 	    String emailBusca = email.trim().toLowerCase();
-	    for(int i = 0; i < ultimoAluno; i++) {
-	        if(alunos[i].getEmail().toLowerCase().contains(emailBusca)) {
-	            return alunos[i];
+		for (Aluno aluno : alunos) {
+			if(aluno.getEmail().toLowerCase().contains(emailBusca)) {
+	            return aluno;
 	        }
-	    }
+		}
+
 	    return null;
 	}
 
-	public Aluno buscarAlunoPorIndice(int indice) {
-	    if(indice >= 0 && indice < ultimoAluno) {
-	        return alunos[indice];
-	    }
-	    return null;
+	public Aluno buscarAlunoPorIndice(int indice) throws IndexOutOfBoundsException{
+		try{
+			return alunos.get(indice);
+		}catch(IndexOutOfBoundsException e){
+			throw new IndexOutOfBoundsException();
+		}
 	}
 
 	public boolean removerAluno(String email) {
-	    if(email == null || email.trim().isEmpty()) {
+	    if(email.isBlank() || email.isEmpty()) {
 	        return false;
 	    }
-	    
-	    String emailBusca = email.trim().toLowerCase();
-	    
-	    for(int i = 0; i < ultimoAluno; i++) {
-	        if(alunos[i].getEmail().toLowerCase().equals(emailBusca)) {
-	            for(int j = i; j < ultimoAluno - 1; j++) {
-	                alunos[j] = alunos[j + 1];
-	            }
-	            alunos[--ultimoAluno] = null;
+
+	    String emailBusca = email.trim();
+
+		for (Aluno aluno : alunos) {
+			if(aluno.getEmail().equalsIgnoreCase(emailBusca)) {
+	            alunos.remove(aluno);
 	            return true;
 	        }
-	    }
+		}
+
 	    return false;
 	}
 
 	public boolean alterarAluno(String emailAtual, String novoNome, String novoEmail, 
-	                           String novoTelefone, String novaDataNascimento, float novaAltura) {
+	                            String novoTelefone, String novaDataNascimento, float novaAltura) {
 	    Aluno aluno = buscarAlunoPorEmail(emailAtual);
 	    if(aluno == null) {
 	        System.out.println("Aluno não encontrado!");
 	        return false;
 	    }
 	    
-	    if(novoNome != null && !novoNome.trim().isEmpty()) {
+	    if(!novoNome.isBlank() && !novoNome.isEmpty()) {
 	        aluno.setNome(novoNome);
 	    }
 	    
-	    if(novoEmail != null && !novoEmail.trim().isEmpty()) {
+	    if(!novoEmail.isBlank() && !novoEmail.isEmpty()) {
 	        aluno.setEmail(novoEmail);
 	    }
 	    
-	    if(novoTelefone != null && !novoTelefone.trim().isEmpty()) {
+	    if(!novoTelefone.isBlank() && !novoTelefone.isEmpty()) {
 	        aluno.setTelefone(novoTelefone);
 	    }
 	    
-	    if(novaDataNascimento != null && !novaDataNascimento.trim().isEmpty()) {
+	    if(!novaDataNascimento.isBlank() && !novaDataNascimento.isEmpty()) {
 	        aluno.setDataNascimento(novaDataNascimento);
 	    }
 	    
@@ -306,22 +318,32 @@ public class Academia {
 	    System.out.println("\n═══ ALUNOS CADASTRADOS ═══\n");
 	    if(ultimoAluno == 0) {
 	        System.out.println("(Nenhum aluno cadastrado)");
-	    } else {
-	        for(int i = 0; i < ultimoAluno; i++) {
-	            System.out.println((i + 1) + ")\n" + alunos[i].toString() + "\n");
-	        }
+			return;
 	    }
-	    System.out.println("\nTotal: " + ultimoAluno + "/" + MAX_ALUNOS);
+
+		int cont = 0;
+		for (Aluno aluno : alunos) {
+			cont++;
+			System.out.println(cont+ ")" + aluno.toString() + "\n");
+		}
+		
+	    System.out.println("\nTotal: " + cont + ".");
 	}
 
 	public int getQuantAlunos() {
 	    return this.ultimoAluno;
 	}
+	
+	public void setQuantAlunos(int quantAlunos) {
+	    this.ultimoAluno = quantAlunos;
+	}
 
-	public Aluno[] getAlunos() {
-	    Aluno[] alunosValidos = new Aluno[ultimoAluno];
-	    System.arraycopy(alunos, 0, alunosValidos, 0, ultimoAluno);
-	    return alunosValidos;
+	public List<Aluno> getAlunos() {
+	    return alunos;
+	}
+	
+	public void setAlunos(List<Aluno> alunos) {
+	    this.alunos = alunos;
 	}
 	
 	public boolean addInstrutor(Instrutor novoInstrutor) {
@@ -330,13 +352,8 @@ public class Academia {
 	        return false;
 	    }
 	    
-	    if(this.ultimoInstrutor < MAX_INSTRUTORES) {
-	        this.instrutores[this.ultimoInstrutor++] = novoInstrutor;
-	        return true;
-	    } else {
-	        System.out.println("Capacidade máxima de instrutores atingida!");
-	        return false;
-	    }
+		this.instrutores.add(novoInstrutor);
+		return true;
 	}
 
 	public Instrutor buscarInstrutorPorNome(String nome) {
@@ -345,52 +362,52 @@ public class Academia {
 	    }
 	    
 	    String nomeBusca = nome.trim().toLowerCase();
-	    for(int i = 0; i < ultimoInstrutor; i++) {
-	        if(instrutores[i].getNome().toLowerCase().contains(nomeBusca)) {
-	            return instrutores[i];
-	        }
-	    }
+		for (Instrutor instrutor : instrutores) {
+			if(instrutor.getNome().toLowerCase().contains(nomeBusca)){
+				return instrutor;
+			}
+		}
 
 	    return null;
 	}
 
 	public Instrutor buscarInstrutorPorEmail(String email) {
-	    if(email == null || email.trim().isEmpty()) {
+	    if(email.isBlank() || email.isEmpty()) {
 	        return null;
 	    }
 	    
 	    String emailBusca = email.trim().toLowerCase();
-	    for(int i = 0; i < ultimoInstrutor; i++) {
-	        if(instrutores[i].getEmail().toLowerCase().contains(emailBusca)) {
-	            return instrutores[i];
+		for (Instrutor instrutor : instrutores) {
+			if(instrutor.getEmail().toLowerCase().contains(emailBusca)) {
+	            return instrutor;
 	        }
-	    }
+		}
+
 	    return null;
 	}
 
-	public Instrutor buscarInstrutorPorIndice(int indice) {
-	    if(indice >= 0 && indice < ultimoInstrutor) {
-	        return instrutores[indice];
-	    }
-	    return null;
+	public Instrutor buscarInstrutorPorIndice(int indice) throws IndexOutOfBoundsException{
+		try{
+			return instrutores.get(indice);
+		}catch(IndexOutOfBoundsException e){
+			throw new IndexOutOfBoundsException();
+		}
 	}
 
 	public boolean removerInstrutor(String email) {
-	    if(email == null || email.trim().isEmpty()) {
+	    if(email.isBlank() || email.isEmpty()) {
 	        return false;
 	    }
 	    
-	    String emailBusca = email.trim().toLowerCase();
+	    String emailBusca = email.trim();
 	    
-	    for(int i = 0; i < ultimoInstrutor; i++) {
-	        if(instrutores[i].getEmail().toLowerCase().equals(emailBusca)) {
-	            for(int j = i; j < ultimoInstrutor - 1; j++) {
-	                instrutores[j] = instrutores[j + 1];
-	            }
-	            instrutores[--ultimoInstrutor] = null;
+		for (Instrutor instrutor : instrutores) {
+			if(instrutor.getEmail().equalsIgnoreCase(emailBusca)) {
+				instrutores.remove(instrutor);
 	            return true;
 	        }
-	    }
+		}
+
 	    return false;
 	}
 
@@ -401,23 +418,23 @@ public class Academia {
 	        System.out.println("Instrutor não encontrado!");
 	        return false;
 	    }
-	    
-	    if(novoNome != null && !novoNome.trim().isEmpty()) {
+
+	    if(!novoNome.isBlank() && !novoNome.isEmpty()) {
 	        instrutor.setNome(novoNome);
 	    }
-	    
-	    if(novoEmail != null && !novoEmail.trim().isEmpty()) {
+
+	    if(!novoEmail.isBlank() && !novoEmail.isEmpty()) {
 	        instrutor.setEmail(novoEmail);
 	    }
-	    
-	    if(novoTelefone != null && !novoTelefone.trim().isEmpty()) {
+
+	    if(!novoTelefone.isBlank() && !novoTelefone.isEmpty()) {
 	        instrutor.setTelefone(novoTelefone);
 	    }
-	    
-	    if(novaFormacao != null && !novaFormacao.trim().isEmpty()) {
+
+	    if(!novaFormacao.isBlank() && !novaFormacao.isEmpty()) {
 	        instrutor.setFormacao(novaFormacao);
 	    }
-	    
+
 	    return true;
 	}
 
@@ -425,22 +442,32 @@ public class Academia {
 	    System.out.println("\n═══ INSTRUTORES CADASTRADOS ═══\n");
 	    if(ultimoInstrutor == 0) {
 	        System.out.println("(Nenhum instrutor cadastrado)");
-	    } else {
-	        for(int i = 0; i < ultimoInstrutor; i++) {
-	            System.out.println((i + 1) + ")\n" + instrutores[i].toString() + "\n");
-	        }
+			return;
 	    }
-	    System.out.println("\nTotal: " + ultimoInstrutor + "/" + MAX_INSTRUTORES);
+
+		int count = 0;
+		for (Instrutor instrutor : instrutores) {
+			count++;
+			System.out.println(count + ") " + instrutor.toString() + "\n");
+		}
+
+	    System.out.println("\nTotal: " + count + ".");
 	}
 
 	public int getQuantInstrutores() {
 	    return this.ultimoInstrutor;
 	}
+	
+	public void setQuantInstrutores(int quantInstrutores) {
+	    this.ultimoInstrutor = quantInstrutores;
+	}
 
-	public Instrutor[] getInstrutores() {
-	    Instrutor[] instrutoresValidos = new Instrutor[ultimoInstrutor];
-	    System.arraycopy(instrutores, 0, instrutoresValidos, 0, ultimoInstrutor);
-	    return instrutoresValidos;
+	public List<Instrutor> getInstrutores() {
+	    return instrutores;
+	}
+	
+	public void setInstrutores(List<Instrutor> instrutores) {
+	    this.instrutores = instrutores;
 	}
 	
 	@Override
